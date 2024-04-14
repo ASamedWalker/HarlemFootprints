@@ -8,26 +8,20 @@ class HistoricalSiteCreate(BaseModel):
     description: str
     longitude: float
     latitude: float
-    address: Optional[str] = None
-    era: str
-    tags: List[str] = []
-    images: List[str] = []
-    audio_guide_url: Optional[str] = None
-
-
-# Schema for responses, this might include fields like creation date or other auto-generated data
-class HistoricalSiteRead(BaseModel):
-    id: int
-    name: str
-    description: str
-    longitude: float
-    latitude: float
     address: Optional[str]
     era: str
     tags: List[str]
     images: List[str]
     audio_guide_url: Optional[str]
+
+
+# Schema for responses, this might include fields like creation date or other auto-generated data
+class HistoricalSiteRead(HistoricalSiteCreate):
+    id: int
     verified: bool
+
+    class Config:
+        from_attributes = True
 
 
 # Schema for updates, usually optional fields, as not all fields need to be updated
@@ -45,13 +39,3 @@ class HistoricalSiteUpdate(BaseModel):
 
 class HistoricalSiteDelete(BaseModel):
     id: int
-    name: str
-    description: str
-    longitude: float
-    latitude: float
-    address: Optional[str]
-    era: str
-    tags: List[str]
-    images: List[str]
-    audio_guide_url: Optional[str]
-    verified: bool

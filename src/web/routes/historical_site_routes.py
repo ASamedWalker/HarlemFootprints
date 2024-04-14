@@ -2,25 +2,27 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...services.historical_site_service import (
+from services.historical_site_service import (
     create_historical_site,
     get_historical_site,
     get_all_historical_sites,
     update_historical_site,
     delete_historical_site,
 )
-from ...schemas.historical_site import (
+from schemas.historical_site import (
     HistoricalSiteCreate,
     HistoricalSiteRead,
     HistoricalSiteUpdate,
 )
-from ...data.database import get_session
+from data.database import get_session
 
 router = APIRouter()
 
 
 @router.post(
-    "/", response_model=HistoricalSiteRead, status_code=status.HTTP_201_CREATED
+    "/historical_sites/",
+    response_model=HistoricalSiteRead,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_site(
     site: HistoricalSiteCreate, db: AsyncSession = Depends(get_session)

@@ -1,14 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from ..data.historical_site_data import (
+from data.historical_site_data import (
     create_historical_site as da_create_historical_site,
     get_historical_site as da_get_historical_site,
     get_all_historical_sites as da_get_all_historical_sites,
     update_historical_site as da_update_historical_site,
     delete_historical_site as da_delete_historical_site,
 )
-from ..schemas.historical_site import (
+from schemas.historical_site import (
     HistoricalSiteCreate,
     HistoricalSiteRead,
     HistoricalSiteUpdate,

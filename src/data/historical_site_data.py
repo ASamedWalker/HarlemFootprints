@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from ..models.historical_site import HistoricalSite
-from ..schemas.historical_site import HistoricalSiteCreate, HistoricalSiteUpdate
+from models.historical_site import HistoricalSite
+from schemas.historical_site import HistoricalSiteCreate, HistoricalSiteUpdate
 
 
 async def create_historical_site(

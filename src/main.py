@@ -1,12 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from .data.database import database, create_tables
-from .web.v1.endpoints import router
-
-app = FastAPI()
-
-
-app.include_router(router, prefix="/v1")
+from data.database import database, create_tables
+from web.v1 import router
 
 
 @asynccontextmanager
@@ -18,6 +13,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(router, prefix="/v1")
 
 
 if __name__ == "__main__":

@@ -16,11 +16,15 @@ async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False
 database = Database(DATABASE_URL)
 
 
+async def create_tables():
+    async with engine.begin() as conn:
+        try:
+            # await conn.run_sync(SQLModel.metadata.drop_all)
+            await conn.run_sync(SQLModel.metadata.create_all)
+        except Exception as e:
+            print(f"An error occurred when creating the tables: {e}")
+
+
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
-
-
-async def create_tables():
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)

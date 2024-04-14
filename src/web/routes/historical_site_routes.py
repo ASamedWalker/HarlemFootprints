@@ -20,7 +20,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/historical_sites/",
+    "/",
     response_model=HistoricalSiteRead,
     status_code=status.HTTP_201_CREATED,
 )

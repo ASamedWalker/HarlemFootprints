@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import List, Optional
 
 
@@ -12,17 +12,11 @@ class HistoricalEventCreate(BaseModel):
     images: List[str] = []
 
 
-class HistoricalEventRead(BaseModel):
+class HistoricalEventRead(HistoricalEventCreate):
     id: int
-    title: str
-    description: str
-    date: str
-    site_id: int
-    participants: List[str]
-    event_type: str
-    images: List[str]
 
-    Config: ConfigDict = {"from_attributes": True}
+    class Config:
+        from_attributes = True
 
 
 class HistoricalEventUpdate(BaseModel):
@@ -37,10 +31,3 @@ class HistoricalEventUpdate(BaseModel):
 
 class HistoricalEventDelete(BaseModel):
     id: int
-    title: str
-    description: str
-    date: str
-    site_id: int
-    participants: List[str]
-    event_type: str
-    images: List[str]

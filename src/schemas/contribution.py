@@ -1,7 +1,6 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
-
 
 
 class ContributionCreate(BaseModel):
@@ -13,31 +12,21 @@ class ContributionCreate(BaseModel):
     approved: bool
 
 
-class ContributionUpdate(BaseModel):
-    user_id: Optional[int]
-    site_id: Optional[int]
-    content: Optional[str]
-    contribution_type: Optional[str]
-    created_at: Optional[datetime]
-    approved: Optional[bool]
-
-
-class ContributionRead(BaseModel):
+class ContributionRead(ContributionCreate):
     id: int
-    user_id: int
-    site_id: int
-    content: str
-    contribution_type: str
-    created_at: datetime
-    approved: bool
 
-   Config: ConfigDict = {"from_attributes": True}
+    class Config:
+        from_attributes = True
+
+
+class ContributionUpdate(BaseModel):
+    user_id: Optional[int] = None
+    site_id: Optional[int] = None
+    content: Optional[str] = None
+    contribution_type: Optional[str] = None
+    created_at: Optional[datetime] = None
+    approved: Optional[bool] = None
+
 
 class ContributionDelete(BaseModel):
     id: int
-    user_id: int
-    site_id: int
-    content: str
-    contribution_type: str
-    created_at: datetime
-    approved: bool

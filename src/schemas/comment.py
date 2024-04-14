@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime
 
 
@@ -11,29 +11,20 @@ class CommentCreate(BaseModel):
     created_at: datetime
 
 
-class CommentUpdate(BaseModel):
-    user_id: Optional[int]
-    site_id: Optional[int]
-    event_id: Optional[int]
-    content: Optional[str]
-    created_at: Optional[datetime]
-
-
-class CommentRead(BaseModel):
+class CommentRead(CommentCreate):
     id: int
-    user_id: int
-    site_id: Optional[int]
-    event_id: Optional[int]
-    content: str
-    created_at: datetime
 
-    Config: ConfigDict = {"from_attributes": True}
+    class Config:
+        from_attributes = True
+
+
+class CommentUpdate(BaseModel):
+    user_id: Optional[int] = None
+    site_id: Optional[int] = None
+    event_id: Optional[int] = None
+    content: Optional[str] = None
+    created_at: Optional[datetime] = None
 
 
 class CommentDelete(BaseModel):
     id: int
-    user_id: int
-    site_id: Optional[int]
-    event_id: Optional[int]
-    content: str
-    created_at: datetime

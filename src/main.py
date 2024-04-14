@@ -1,20 +1,31 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from data.database import database, create_tables
-from web.v1 import router
+from data.database import create_tables
+from web.v1.router import router as v1_router
+
+
+# Assuming you have a hypothetical function to load and unload resources
+def load_resources():
+    print("Loading resources...")
+    # Code to load your resources, e.g. database connections, etc.
+
+
+def unload_resources():
+    print("Unloading resources...")
+    # Code to unload/cleanup resources
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_tables()
-    await database.connect()
+    load_resources()
     yield
-    await database.disconnect()
+    unload_resources()
 
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(router, prefix="/v1")
+app.include_router(v1_router, prefix="/v1")
 
 
 if __name__ == "__main__":

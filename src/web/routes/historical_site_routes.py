@@ -2,19 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from services.historical_site_service import (
+from src.services.historical_site_service import (
     create_historical_site,
     get_historical_site,
     get_all_historical_sites,
     update_historical_site,
     delete_historical_site,
 )
-from schemas.historical_site import (
+from src.schemas.historical_site import (
     HistoricalSiteCreate,
     HistoricalSiteRead,
     HistoricalSiteUpdate,
 )
-from data.database import get_session
+from src.data.database import get_session
 
 router = APIRouter()
 

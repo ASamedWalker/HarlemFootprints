@@ -1,6 +1,6 @@
-# HarlemFootprints
+# HiveNYC
 
-Discover the rich tapestry of Harlem's history right at your fingertips. HarlemFootprints is an interactive web application that guides locals and tourists alike through the vibrant streets of Harlem, New York. Uncover the stories, the people, and the events that have shaped the neighborhood into the cultural heart it is today.
+Discover the rich tapestry of New York's history right at your fingertips. HiveNYC is an interactive web application that guides locals and tourists alike through the vibrant streets of New York. Uncover the stories, the people, and the events that have shaped the neighborhood into the cultural heart it is today.
 
 ## Features
 
@@ -13,6 +13,6 @@ Discover the rich tapestry of Harlem's history right at your fingertips. HarlemF
 
 ## Getting Started
 
-To run HarlemFootprints locally:
+To run HiveNYC locally:
 
 1. Clone the repository to your local machine.

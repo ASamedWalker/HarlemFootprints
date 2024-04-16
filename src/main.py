@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from data.database import create_tables
-from web.v1.router import router as v1_router
+from src.data.database import create_tables
+from src.web.v1.router import router as v1_router
 
 
 # Assuming you have a hypothetical function to load and unload resources

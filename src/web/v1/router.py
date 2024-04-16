@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from web.routes.historical_site_routes import router as historical_site_router
+from src.web.routes.historical_site_routes import router as historical_site_router
 
 router = APIRouter()
 

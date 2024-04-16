@@ -62,15 +62,20 @@ async def update_historical_site(
     try:
         query = select(HistoricalSite).filter(HistoricalSite.id == site_id)
         result = await db.execute(query)
-        site = result.scalars().one()
-        for field, value in update.dict().items():
-            setattr(site, field, value)
+        scalars = result.scalars()  # Do not await the scalars() call
+        site = scalars.one()  # Do not await the one() call
+        for key, value in update.dict(exclude_unset=True).items():
+            setattr(site, key, value)
         await db.commit()
         await db.refresh(site)
         return site
     except NoResultFound as e:
         logger.error(f"An error occurred when updating the historical site: {e}")
         raise HTTPException(status_code=404, detail="Historical site not found")
+    except IntegrityError as e:
+        logger.error(f"An error occurred when updating the historical site: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
     except SQLAlchemyError as e:
         logger.error(f"An error occurred when updating the historical site: {e}")
         await db.rollback()

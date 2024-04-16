@@ -47,7 +47,7 @@ async def test_db():
 @pytest.fixture
 async def mock_session(mocker):
     mock = mocker.patch("src.data.database.get_session", autospec=True)
-    session_mock = AsyncMock(spec=AsyncSession)
+    session_mock = AsyncMock(spec_set=AsyncSession)
     mock.return_value = session_mock
     yield session_mock
 
@@ -99,17 +99,36 @@ async def test_get_all_historical_sites(test_db):
 
 
 @pytest.mark.asyncio
-async def test_update_historical_site_success(mock_db_session):
-    # Assuming we have a HistoricalSite model with fields that can be updated
-    site_id = 1
+async def test_update_historical_site_success(mock_session):
+    site_id = 1  # Assuming this is the ID of the site to update
+    original_site = HistoricalSite(
+        id=site_id,
+        name="Historic Site One",
+        description="Description of the historic site",
+        longitude=-73.935242,
+        latitude=40.730610,
+        address="123 Test St",
+        era="Modern",
+        tags=["test", "historic"],
+        images=["image1.jpg"],
+        audio_guide_url="http://example.com/audio.mp3",
+        verified=True,
+    )
+
     update_data = HistoricalSiteUpdate(
         name="Updated Name", description="Updated Description"
     )
 
+    # Mock the database call to return the original site and then simulate an update
+    mock_session.execute.return_value = AsyncMock()
+    mock_session.execute.return_value.scalars.return_value.one.return_value = (
+        original_site
+    )
+
     # Perform the update
-    updated_site = await update_historical_site(mock_db_session, site_id, update_data)
+    updated_site = await update_historical_site(mock_session, site_id, update_data)
 
     # Verify the site was updated correctly
     assert updated_site.name == "Updated Name"
     assert updated_site.description == "Updated Description"
-    mock_db_session.commit.assert_called_once()
+    mock_session.commit.assert_called_once()

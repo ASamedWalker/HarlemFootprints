@@ -16,7 +16,7 @@ from src.services.historical_site_service import update_historical_site
 
 # Fixture to manage the database state
 @pytest.fixture(scope="module")
-async def test_db():
+async def async_client():
     DATABASE_URL = "sqlite+aiosqlite:///:memory:"
     engine = create_async_engine(DATABASE_URL, echo=True)
     AsyncTestingSessionLocal = sessionmaker(
@@ -46,14 +46,15 @@ async def test_db():
 
 @pytest.fixture
 async def mock_session(mocker):
+    # Mock the session creation function
     mock = mocker.patch("src.data.database.get_session", autospec=True)
-    session_mock = AsyncMock(spec_set=AsyncSession)
+    session_mock = AsyncMock(spec=AsyncSession)
     mock.return_value = session_mock
     yield session_mock
 
 
 @pytest.mark.asyncio
-async def test_create_historical_site(test_db, mock_session):
+async def test_create_historical_site(async_client, mock_session):
     site_payload = {
         "name": "Historic Site One",
         "description": "Description of the historic site",
@@ -68,7 +69,7 @@ async def test_create_historical_site(test_db, mock_session):
     }
     # Act: Send a request to the endpoint
     async with AsyncClient(app=app, base_url="http://test") as client:
-        response = await client.post("/v1/historical-sites/", json=site_payload)
+        response = await async_client.post("/v1/historical-sites/", json=site_payload)
 
     # Assert: Check the response and any side-effects
     assert response.status_code == 201
@@ -80,18 +81,18 @@ async def test_create_historical_site(test_db, mock_session):
 
 
 @pytest.mark.asyncio
-async def test_get_historical_site(test_db):
+async def test_get_historical_site(async_client):
     async with AsyncClient(app=app, base_url="http://test") as client:
-        response = await client.get("/v1/historical-sites/1")
+        response = await async_client.get("/v1/historical-sites/1")
         assert response.status_code == 200
         assert response.json()["name"] == "Historic Site One"
     assert response.json()["description"] == "Description of the historic site"
 
 
 @pytest.mark.asyncio
-async def test_get_all_historical_sites(test_db):
+async def test_get_all_historical_sites(async_client):
     async with AsyncClient(app=app, base_url="http://test") as client:
-        response = await client.get("/v1/historical-sites/")
+        response = await async_client.get("/v1/historical-sites/")
         assert response.status_code == 200
         assert len(response.json()) == 1
         assert response.json()[0]["name"] == "Historic Site One"
@@ -99,36 +100,79 @@ async def test_get_all_historical_sites(test_db):
 
 
 @pytest.mark.asyncio
-async def test_update_historical_site_success(mock_session):
-    site_id = 1  # Assuming this is the ID of the site to update
-    original_site = HistoricalSite(
-        id=site_id,
-        name="Historic Site One",
-        description="Description of the historic site",
-        longitude=-73.935242,
-        latitude=40.730610,
-        address="123 Test St",
-        era="Modern",
-        tags=["test", "historic"],
-        images=["image1.jpg"],
-        audio_guide_url="http://example.com/audio.mp3",
-        verified=True,
+async def test_update_historical_site(async_client, mocker):
+    site_id = 1
+    original_site_data = {
+        "id": site_id,
+        "name": "Historic Site One",
+        "description": "Description of the historic site",
+        "longitude": -73.935242,
+        "latitude": 40.730610,
+        "address": "123 Test St",
+        "era": "Modern",
+        "tags": ["test", "historic"],
+        "images": ["image1.jpg"],
+        "audio_guide_url": "http://example.com/audio.mp3",
+        "verified": True,
+    }
+    updated_site_data = {
+        "id": site_id,
+        "name": "Updated Historic Site One",
+        "description": "Updated description of the historic site",
+        "longitude": -73.935242,  # Assuming no change
+        "latitude": 40.730610,    # Assuming no change
+        "address": "123 Test St",  # Assuming no change
+        "era": "Modern",  # Assuming no change
+        "tags": ["updated", "historic"],
+        "images": ["image2.jpg"],
+        "audio_guide_url": "http://example.com/new_audio.mp3",
+        "verified": True,
+    }
+
+    # Mock the update function to return updated site data
+    mock_update_historical_site = mocker.patch(
+        "src.web.routes.historical_site_routes.update_historical_site_endpoint", return_value=updated_site_data
     )
 
-    update_data = HistoricalSiteUpdate(
-        name="Updated Name", description="Updated Description"
+    # Perform the update via API call
+    response = await async_client.put(
+        f"/v1/historical-sites/{site_id}", json=updated_site_data
     )
 
-    # Mock the database call to return the original site and then simulate an update
-    mock_session.execute.return_value = AsyncMock()
-    mock_session.execute.return_value.scalars.return_value.one.return_value = (
-        original_site
+    # Check the response status code and data
+    assert response.status_code == 200
+    assert response.json() == updated_site_data
+    mock_update_historical_site.assert_called_once_with(ANY, site_id, updated_site_data)
+
+
+@pytest.mark.asyncio
+async def test_update_historical_site_not_found(async_client, mocker):
+    site_id = 1  # Assuming this is the ID of a non-existent site
+    updated_site_data = {
+        "id": site_id,
+        "name": "Updated Historic Site One",
+        "description": "Updated description of the historic site",
+        "longitude": -73.935242,
+        "latitude": 40.730610,
+        "address": "123 Test St",
+        "era": "Modern",
+        "tags": ["updated", "historic"],
+        "images": ["image2.jpg"],
+        "audio_guide_url": "http://example.com/new_audio.mp3",
+        "verified": True,
+    }
+
+    # Mock the update function to return None, simulating not finding the site
+    mock_update_historical_site = mocker.patch(
+        "src.web.routes.historical_site_routes.update_historical_site_endpoint", return_value=None
     )
 
-    # Perform the update
-    updated_site = await update_historical_site(mock_session, site_id, update_data)
+    # Perform the update via API call
+    response = await async_client.put(
+        f"/v1/historical-sites/{site_id}", json=updated_site_data
+    )
 
-    # Verify the site was updated correctly
-    assert updated_site.name == "Updated Name"
-    assert updated_site.description == "Updated Description"
-    mock_session.commit.assert_called_once()
+    # Check the response status code and the error message
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+    mock_update_historical_site.assert_called

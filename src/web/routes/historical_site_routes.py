@@ -16,6 +16,7 @@ from src.schemas.historical_site import (
 )
 from src.data.database import get_session
 
+
 router = APIRouter()
 
 
@@ -44,13 +45,22 @@ async def read_sites(db: AsyncSession = Depends(get_session)):
 
 
 @router.put("/{site_id}", response_model=HistoricalSiteRead)
-async def update_site(
-    site_id: int, site: HistoricalSiteUpdate, db: AsyncSession = Depends(get_session)
-):
-    updated_site = await update_historical_site(db, site_id, site)
-    if updated_site is None:
-        raise HTTPException(status_code=404, detail="Site not found")
-    return updated_site
+async def update_historical_site_endpoint(
+    site_id: int,
+    site_update: HistoricalSiteUpdate,
+    session: AsyncSession = Depends(get_session),
+) -> HistoricalSiteUpdate:
+    # Convert Pydantic model to dictionary for updating model fields
+    site_update_dict = site_update.model_dump(exclude_unset=True)
+
+    updated_historical_site = await update_historical_site(
+        session, site_id, site_update_dict
+    )
+    if not updated_historical_site:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Historical site not found"
+        )
+    return updated_historical_site
 
 
 @router.delete("/{site_id}", status_code=status.HTTP_204_NO_CONTENT)

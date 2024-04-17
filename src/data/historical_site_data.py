@@ -4,6 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound, IntegrityError, SQLAlchemyError
 from src.models.historical_site import HistoricalSite
 from src.schemas.historical_site import HistoricalSiteCreate, HistoricalSiteUpdate
+from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -57,30 +58,39 @@ async def get_all_historical_sites(db: AsyncSession) -> list:
 
 
 async def update_historical_site(
-    db: AsyncSession, site_id: int, update: HistoricalSiteUpdate
-) -> HistoricalSite:
-    try:
-        query = select(HistoricalSite).filter(HistoricalSite.id == site_id)
-        result = await db.execute(query)
-        scalars = result.scalars()  # Do not await the scalars() call
-        site = scalars.one()  # Do not await the one() call
-        for key, value in update.dict(exclude_unset=True).items():
-            setattr(site, key, value)
-        await db.commit()
-        await db.refresh(site)
-        return site
-    except NoResultFound as e:
-        logger.error(f"An error occurred when updating the historical site: {e}")
-        raise HTTPException(status_code=404, detail="Historical site not found")
-    except IntegrityError as e:
-        logger.error(f"An error occurred when updating the historical site: {e}")
-        await db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-    except SQLAlchemyError as e:
-        logger.error(f"An error occurred when updating the historical site: {e}")
-        await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    session: AsyncSession, site_id: int, update_data: dict
+) -> Optional[HistoricalSite]:
+    # Validate update_data
+    if not isinstance(update_data, dict):
+        raise HTTPException(
+            status_code=400, detail="Update data must be a dictionary"
+        )
+    for key in update_data:
+        if not hasattr(HistoricalSite, key):
+            raise HTTPException(status_code=400, detail=f"Invalid key: {key}")
 
+    try:
+        historical_site = await session.get(HistoricalSite, site_id)
+        if not historical_site:
+            raise HTTPException(status_code=404, detail="Historical site not found")
+
+        for key, value in update_data.items():
+            setattr(historical_site, key, value)
+
+        await session.commit()
+        return historical_site  # Assuming model_dump() is not required or is handled elsewhere
+
+    except IntegrityError as e:
+        await session.rollback()
+        logger.error(f"Failed to update historical site due to constraint violation: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail="Failed to update historical site due to constraint violation"
+        )
+    except SQLAlchemyError as e:
+        await session.rollback()
+        logger.error(f"Failed to update historical site: {e}")
+        raise HTTPException(status_code=500, detail="A database error occurred")
 
 async def delete_historical_site(db: AsyncSession, site_id: int) -> bool:
     site = await get_historical_site(db, site_id)

@@ -1,45 +1,38 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime
 
 
 # Schema for client inputs on creating a new historical site
 class HistoricalSiteCreate(BaseModel):
     name: str
     description: str
-    longitude: float
     latitude: float
-    address: Optional[str]
+    longitude: float
+    address: Optional[str] = None
     era: str
-    tags: List[str]
-    images: List[str]
-    audio_guide_url: Optional[str]
+    tags: Optional[List[str]] = []
+    images: Optional[List[str]] = []
+    audio_guide_url: Optional[str] = None
+    verified: Optional[bool] = False
 
 
-# Schema for responses, this might include fields like creation date or other auto-generated data
+# Schema for responses, which might include additional fields like creation date or other auto-generated data
 class HistoricalSiteRead(HistoricalSiteCreate):
     id: int
-    verified: bool = False
 
     class Config:
         from_attributes = True
 
 
+# Schema for updates, usually includes optional fields as not all fields need to be updated
 class HistoricalSiteUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    longitude: Optional[float] = None
     latitude: Optional[float] = None
+    longitude: Optional[float] = None
     address: Optional[str] = None
     era: Optional[str] = None
-    tags: Optional[List[str]] = None
-    images: Optional[List[str]] = None
+    tags: Optional[List[str]] = []
+    images: Optional[List[str]] = []
     audio_guide_url: Optional[str] = None
     verified: Optional[bool] = None
-
-    class Config:
-        from_attributes = True
-
-
-class HistoricalSiteDelete(BaseModel):
-    id: int

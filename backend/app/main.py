@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from data.database import create_tables, get_session
-from web.v1.router import router as v1_router
+from api.historical_site_router import router as historical_site_router
+from data.database import create_tables
 
 
 # Assuming you have a hypothetical function to load and unload resources
@@ -25,10 +25,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(v1_router, prefix="/v1")
 
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", reload=True)
+app.include_router(
+    historical_site_router, prefix="/sites", tags=["Historical Site"]
+)

@@ -5,9 +5,7 @@ from typing import List, Optional
 
 class HistoricalSite(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
-    name: str = Field(
-        sa_column=Column(String, unique=True, index=True)
-    )  # Correct way to set unique and index
+    name: str = Field(sa_column=Column(String, unique=True, index=True))
     description: str = Field(sa_column=Column(String))
     latitude: float = Field(sa_column=Column(Float))
     longitude: float = Field(sa_column=Column(Float))
@@ -25,3 +23,6 @@ class HistoricalSite(SQLModel, table=True):
         default=None, sa_column=Column(String, nullable=True)
     )
     verified: bool = Field(default=False, sa_column=Column(Boolean))
+    location: Optional[str] = Field(
+        default=None, sa_column=Column(String, nullable=True)
+    )

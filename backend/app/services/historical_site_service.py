@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
 from sqlalchemy.future import select
 from sqlalchemy.sql import or_
+from sqlalchemy import func
+from geoalchemy2 import Geography
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -130,6 +132,22 @@ async def search_historical_sites(
             query = query.filter(HistoricalSite.tags.any(tag.in_(tags)))
 
         result = await db.execute(query)
+        sites = result.scalars().all()
+        return sites
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def search_nearby_sites(
+    db: AsyncSession, latitude: float, longitude: float, radius: float
+) -> List[HistoricalSite]:
+    try:
+        # Convert latitude and longitude to a Point geography type directly in the query
+        point = func.ST_Point(longitude, latitude, type_=Geography)
+        stmt = select(HistoricalSite).where(
+            func.ST_DWithin(HistoricalSite.location, point, radius)
+        )
+        result = await db.execute(stmt)
         sites = result.scalars().all()
         return sites
     except SQLAlchemyError as e:

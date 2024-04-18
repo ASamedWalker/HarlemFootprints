@@ -14,9 +14,6 @@ class CommentCreate(BaseModel):
 class CommentRead(CommentCreate):
     id: int
 
-    class Config:
-        from_attributes = True
-
 
 class CommentUpdate(BaseModel):
     user_id: Optional[int] = None

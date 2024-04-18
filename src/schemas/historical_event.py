@@ -15,9 +15,6 @@ class HistoricalEventCreate(BaseModel):
 class HistoricalEventRead(HistoricalEventCreate):
     id: int
 
-    class Config:
-        from_attributes = True
-
 
 class HistoricalEventUpdate(BaseModel):
     title: Optional[str] = None

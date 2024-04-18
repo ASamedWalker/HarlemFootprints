@@ -2,8 +2,8 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound, IntegrityError, SQLAlchemyError
-from src.models.historical_site import HistoricalSite
-from src.schemas.historical_site import HistoricalSiteCreate, HistoricalSiteUpdate
+from models.historical_site import HistoricalSite
+from schemas.historical_site import HistoricalSiteCreate, HistoricalSiteRead
 from typing import Optional
 import logging
 
@@ -59,7 +59,7 @@ async def get_all_historical_sites(db: AsyncSession) -> list:
 
 async def update_historical_site(
     session: AsyncSession, site_id: int, update_data: dict
-) -> Optional[HistoricalSite]:
+) -> Optional[HistoricalSiteRead]:
     # Validate update_data
     if not isinstance(update_data, dict):
         raise HTTPException(
@@ -91,6 +91,7 @@ async def update_historical_site(
         await session.rollback()
         logger.error(f"Failed to update historical site: {e}")
         raise HTTPException(status_code=500, detail="A database error occurred")
+
 
 async def delete_historical_site(db: AsyncSession, site_id: int) -> bool:
     site = await get_historical_site(db, site_id)

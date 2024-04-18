@@ -15,9 +15,6 @@ class ContributionCreate(BaseModel):
 class ContributionRead(ContributionCreate):
     id: int
 
-    class Config:
-        from_attributes = True
-
 
 class ContributionUpdate(BaseModel):
     user_id: Optional[int] = None

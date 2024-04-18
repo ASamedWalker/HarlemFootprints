@@ -7,6 +7,7 @@ from httpx._transports.asgi import ASGITransport
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock, ANY
 from src.data.database import get_session, create_tables
+from src.models import HistoricalSite
 
 from src.main import app
 
@@ -14,20 +15,6 @@ from src.schemas.historical_site import HistoricalSiteRead
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-
-
-async def create_tables(engine: AsyncEngine):
-    async with engine.begin() as conn:
-        # Log before creation
-        existing_tables = await conn.run_sync(SQLModel.metadata.tables.keys)
-        print("Existing tables before creation:", existing_tables)
-
-        # Attempt to create tables
-        await conn.run_sync(SQLModel.metadata.create_all)
-
-        # Log after creation
-        created_tables = await conn.run_sync(SQLModel.metadata.tables.keys)
-        print("Tables after creation attempt:", created_tables)
 
 
 @pytest.fixture(scope="module")
@@ -47,19 +34,15 @@ async def async_client():
         autocommit=False,
     )
 
-    # Function to override the get_session dependency
-    def override_get_session():
-        async def dependency_override():
-            async with AsyncTestingSessionLocal() as session:
-                yield session
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
 
-        return dependency_override
+    async def override_get_session():
+        async with AsyncTestingSessionLocal() as session:
+            yield session
 
     # Override the session dependency to provide a controlled session for tests
     app.dependency_overrides[get_session] = override_get_session
-
-    # Ensure all tables are created
-    await create_tables(engine)
 
     # Create an instance of AsyncClient bound to the FastAPI app
     async with AsyncClient(
@@ -72,24 +55,17 @@ async def async_client():
     # Clear the dependency overrides after the tests are done
     app.dependency_overrides.clear()
 
-    # Optionally, drop tables after tests if needed
-    async with engine.begin() as conn:
-        await conn.execute("DROP TABLE IF EXISTS historicalsite;")
-        await conn.execute("DROP TABLE IF EXISTS other_related_tables_if_any;")
-
 
 @pytest.fixture
-async def mock_session(mocker):
-    # Mock the session creation function
+def mock_session(mocker):
     mock = mocker.patch("src.data.database.get_session", autospec=True)
     session_mock = AsyncMock(spec=AsyncSession)
     mock.return_value = session_mock
     yield session_mock
 
 
-# Assuming the use of a fixture 'async_client' that sets up AsyncClient correctly
 @pytest.mark.asyncio
-async def test_create_historical_site(async_client, mocker):
+async def test_create_historical_site(async_client, mock_session):
     site_payload = {
         "name": "Historic Site One",
         "description": "Description of the historic site",
@@ -103,19 +79,12 @@ async def test_create_historical_site(async_client, mocker):
         "verified": True,
     }
 
-    # Act: Send a request to the endpoint using the async_client
     response = await async_client.post("/v1/historical-sites/", json=site_payload)
-
-    # Assert: Check the response status code and the content of the response
-    assert (
-        response.status_code == 201
-    ), f"Expected 201 OK, got {response.status_code}. Response body: {response.text}"
-    assert (
-        response.json()["name"] == "Historic Site One"
-    ), "Name in response does not match expected value"
-    assert (
-        response.json()["description"] == "Description of the historic site"
-    ), "Description does not match expected value"
+    assert response.status_code == 201
+    response_data = response.json()
+    assert response_data == {"id": 1, **site_payload}
+    # Verify that the session was used to execute a query
+    mock_session.execute.assert_called_once()
 
 
 # @pytest.mark.asyncio

@@ -1,6 +1,5 @@
 import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, AsyncEngine
-from databases import Database
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from dotenv import load_dotenv
@@ -21,17 +20,17 @@ AsyncSessionLocal = sessionmaker(
 )
 
 
-async def create_tables(engine: AsyncEngine):
+async def create_tables():
     async with engine.begin() as conn:
-        # Attempt to create tables
-        await conn.run_sync(SQLModel.metadata.create_all)
+        try:
+            logger.info("Dropping existing tables...")
+            await conn.run_sync(SQLModel.metadata.drop_all)
+            logger.info("Creating new tables...")
+            await conn.run_sync(SQLModel.metadata.create_all)
+            logger.info("Tables created successfully.")
+        except Exception as e:
+            logger.error(f"An error occurred when creating tables: {e}")
 
-        # Execute a raw SQL query to list tables for verification
-        result = await conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table';"
-        )
-        tables = await result.fetchall()
-        print("Tables created:", [table[0] for table in tables])
 
 
 async def get_session():

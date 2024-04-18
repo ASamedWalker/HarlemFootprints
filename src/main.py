@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from data.database import create_tables
+from data.database import create_tables, get_session
 from web.v1.router import router as v1_router
 
 

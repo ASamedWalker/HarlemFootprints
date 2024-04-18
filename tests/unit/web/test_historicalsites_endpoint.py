@@ -1,12 +1,12 @@
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from httpx import AsyncClient
 from httpx._transports.asgi import ASGITransport
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock, ANY
-from src.data.database import get_session
+from src.data.database import get_session, create_tables
 
 from src.main import app
 
@@ -16,11 +16,29 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 
-# Fixture to manage the database state
+async def create_tables(engine: AsyncEngine):
+    async with engine.begin() as conn:
+        # Log before creation
+        existing_tables = await conn.run_sync(SQLModel.metadata.tables.keys)
+        print("Existing tables before creation:", existing_tables)
+
+        # Attempt to create tables
+        await conn.run_sync(SQLModel.metadata.create_all)
+
+        # Log after creation
+        created_tables = await conn.run_sync(SQLModel.metadata.tables.keys)
+        print("Tables after creation attempt:", created_tables)
+
+
 @pytest.fixture(scope="module")
 async def async_client():
+    # Define the in-memory SQLite database URL
     DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+    # Create an async engine specific for testing
     engine = create_async_engine(DATABASE_URL, echo=True)
+
+    # Define a session maker configured for async use
     AsyncTestingSessionLocal = sessionmaker(
         engine,
         class_=AsyncSession,
@@ -29,19 +47,35 @@ async def async_client():
         autocommit=False,
     )
 
-    async with engine.begin() as conn:
-        # Ensure all tables are created
-        await conn.run_sync(SQLModel.metadata.create_all)
+    # Function to override the get_session dependency
+    def override_get_session():
+        async def dependency_override():
+            async with AsyncTestingSessionLocal() as session:
+                yield session
 
-    app.dependency_overrides[get_session] = lambda: AsyncTestingSessionLocal()
+        return dependency_override
 
+    # Override the session dependency to provide a controlled session for tests
+    app.dependency_overrides[get_session] = override_get_session
+
+    # Ensure all tables are created
+    await create_tables(engine)
+
+    # Create an instance of AsyncClient bound to the FastAPI app
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://testserver"
+        app=app,
+        base_url="http://testserver",
+        transport=ASGITransport(app=app, raise_app_exceptions=True),
     ) as client:
         yield client
 
-    # Clear overrides after tests
+    # Clear the dependency overrides after the tests are done
     app.dependency_overrides.clear()
+
+    # Optionally, drop tables after tests if needed
+    async with engine.begin() as conn:
+        await conn.execute("DROP TABLE IF EXISTS historicalsite;")
+        await conn.execute("DROP TABLE IF EXISTS other_related_tables_if_any;")
 
 
 @pytest.fixture

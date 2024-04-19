@@ -26,7 +26,11 @@ router = APIRouter()
 async def create_site_endpoint(
     site_create: HistoricalSiteCreate, db: AsyncSession = Depends(get_session)
 ):
-    site = await create_historical_site(db, site_create)
+    try:
+        site = await create_historical_site(db, site_create)
+        return site
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     return site
 
 
@@ -43,18 +47,38 @@ async def search_sites_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/nearby", response_model=list[HistoricalSiteRead])
+async def get_nearby_sites(
+    latitude: float,
+    longitude: float,
+    max_distance: float,
+    db: AsyncSession = Depends(get_session),
+):
+    try:
+        sites = await search_nearby_sites(db, latitude, longitude, max_distance)
+        return [HistoricalSiteRead.from_orm(site) for site in sites]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{site_id}", response_model=HistoricalSiteRead)
 async def get_site_endpoint(site_id: int, db: AsyncSession = Depends(get_session)):
     site = await get_historical_site(db, site_id)
     if not site:
         raise HTTPException(status_code=404, detail="Site not found")
-    return site
+    return HistoricalSiteRead.from_orm(site)
 
 
 @router.get("/", response_model=list[HistoricalSiteRead])
 async def get_all_sites_endpoint(db: AsyncSession = Depends(get_session)):
-    sites = await get_all_historical_sites(db)
-    return sites
+    try:
+        sites = await get_all_historical_sites(db)
+        return sites
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return HistoricalSiteRead.from_orm(sites)
 
 
 @router.put("/{site_id}", response_model=HistoricalSiteRead)
@@ -66,26 +90,12 @@ async def update_site_endpoint(
     site = await update_historical_site(db, site_id, site_update)
     if not site:
         raise HTTPException(status_code=404, detail="Site not found")
-    return site
+    return HistoricalSiteRead.from_orm(site)
 
 
 @router.delete("/{site_id}", response_model=HistoricalSiteRead)
 async def delete_site_endpoint(site_id: int, db: AsyncSession = Depends(get_session)):
-    success = await delete_historical_site(db, site_id)
-    if not success:
+    site = await delete_historical_site(db, site_id)
+    if not site:
         raise HTTPException(status_code=404, detail="Not successful in deleting site")
-    return success
-
-
-@router.get("/nearby", response_model=list[HistoricalSiteRead])
-async def get_nearby_sites(
-    latitude: float,
-    longitude: float,
-    max_distance: int,
-    db: AsyncSession = Depends(get_session),
-):
-    try:
-        sites = await search_nearby_sites(db, latitude, longitude, max_distance)
-        return sites
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return HistoricalSiteRead.from_orm(site)

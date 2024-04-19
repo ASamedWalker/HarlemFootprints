@@ -23,6 +23,3 @@ class HistoricalSite(SQLModel, table=True):
         default=None, sa_column=Column(String, nullable=True)
     )
     verified: bool = Field(default=False, sa_column=Column(Boolean))
-    location: Optional[str] = Field(
-        default=None, sa_column=Column(String, nullable=True)
-    )

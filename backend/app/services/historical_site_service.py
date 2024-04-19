@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from sqlalchemy.sql import or_
 from sqlalchemy import func
 from geoalchemy2 import Geography
-from sqlalchemy.orm import selectinload
+from math import radians, sin, cos, sqrt, asin
 from sqlmodel import Session, select
 from typing import List, Optional
 import logging
@@ -142,13 +142,28 @@ async def search_nearby_sites(
     db: AsyncSession, latitude: float, longitude: float, radius: float
 ) -> List[HistoricalSite]:
     try:
-        # Convert latitude and longitude to a Point geography type directly in the query
-        point = func.ST_Point(longitude, latitude, type_=Geography)
-        stmt = select(HistoricalSite).where(
-            func.ST_DWithin(HistoricalSite.location, point, radius)
-        )
+        # Fetch all sites
+        stmt = select(HistoricalSite)
         result = await db.execute(stmt)
-        sites = result.scalars().all()
+        all_sites = result.scalars().all()
+
+        # Filter sites based on distance
+        sites = []
+        for site in all_sites:
+            # Calculate distance between site and given point
+            lon1, lat1, lon2, lat2 = map(
+                radians, [longitude, latitude, site.longitude, site.latitude]
+            )
+            dlon = lon2 - lon1
+            dlat = lat2 - lat1
+            a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+            c = 2 * asin(sqrt(a))
+            distance = 6371 * c  # Radius of earth in kilometers
+
+            # If distance is within radius, add site to list
+            if distance <= radius:
+                sites.append(site)
+
         return sites
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))

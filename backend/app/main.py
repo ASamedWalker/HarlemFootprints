@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from api.historical_site_router import router as historical_site_router
+from api.contributions_router import router as contributions_router
 from data.database import create_tables
 
 
@@ -28,4 +29,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(
     historical_site_router, prefix="/sites", tags=["Historical Site"]
+)
+app.include_router(
+    contributions_router, prefix="/contributions", tags=["Contributions"]
 )

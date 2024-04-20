@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, JSON
 from datetime import datetime
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from typing import List, Optional
 
 
@@ -27,3 +27,4 @@ class HistoricalSite(SQLModel, table=True):
     date_established: datetime = Field(
         default=datetime.now(), sa_column=Column(String)
     )
+    contributions: List["UserContribution"] = Relationship(back_populates="historical_site")

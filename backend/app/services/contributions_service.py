@@ -13,7 +13,9 @@ async def create_contribution(
     """
     Create a new contribution entry in the database.
     """
-    new_contribution = UserContribution(**contribution_data.dict())
+    new_contribution = UserContribution(
+        **contribution_data.model_dump(exclude_unset=True)
+    )
     db.add(new_contribution)
     try:
         await db.commit()
@@ -21,6 +23,17 @@ async def create_contribution(
         return new_contribution
     except SQLAlchemyError as e:
         await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_all_contributions(db: AsyncSession) -> list[UserContribution]:
+    """
+    Retrieve all contributions from the database.
+    """
+    try:
+        result = await db.execute(select(UserContribution))
+        return result.scalars().all()
+    except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 

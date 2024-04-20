@@ -1,26 +1,35 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, validator
 from typing import Optional, List
 
 
 class ContributionCreate(BaseModel):
-    site_id: int
-    user_id: int  # Assuming users are identified by an ID
-    text: str
+    historical_site_id: int
+    contributor_name: str
+    contribution_details: str
     images: Optional[List[HttpUrl]] = []
     audio: Optional[HttpUrl] = None
-    verified: bool = False  # Contributions might need verification
+    verified: bool = False
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        json_encoders = {HttpUrl: lambda v: str(v)}
+
+    @validator("images", each_item=True)
+    def convert_images_to_str(cls, v):
+        return str(v)
+
+    @validator("audio", always=True)
+    def convert_audio_to_str(cls, v):
+        return str(v) if v else None
 
 
 class ContributionRead(BaseModel):
     id: int
-    site_id: int
-    user_id: int
-    text: str
-    images: List[HttpUrl] = []
-    audio: Optional[HttpUrl] = None
+    historical_site_id: int
+    contributor_name: str
+    contribution_details: str
+    images: List[HttpUrl]
+    audio: Optional[HttpUrl]
     verified: bool
 
     class Config:
@@ -28,13 +37,23 @@ class ContributionRead(BaseModel):
 
 
 class ContributionUpdate(BaseModel):
-    text: Optional[str] = None
-    images: Optional[List[HttpUrl]] = None
-    audio: Optional[HttpUrl] = None
-    verified: Optional[bool] = None
+    contributor_name: Optional[str]
+    contribution_details: Optional[str]
+    images: Optional[List[HttpUrl]]
+    audio: Optional[HttpUrl]
+    verified: Optional[bool]
 
     class Config:
         from_attributes = True
+        json_encoders = {HttpUrl: lambda v: str(v)}
+
+    @validator("images", each_item=True)
+    def convert_images_to_str(cls, v):
+        return str(v)
+
+    @validator("audio", always=True)
+    def convert_audio_to_str(cls, v):
+        return str(v) if v else None
 
 
 class ContributionDelete(BaseModel):

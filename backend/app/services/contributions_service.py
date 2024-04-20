@@ -3,8 +3,11 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
 
-from models.contributions import UserContribution
-from schemas.contributions import ContributionCreate, ContributionUpdate
+from models.contributions import UserContribution, ContributionStatus
+from schemas.contributions import (
+    ContributionCreate,
+    ContributionUpdate,
+)
 
 
 async def create_contribution(
@@ -84,3 +87,25 @@ async def delete_contribution(db: AsyncSession, contribution_id: int) -> bool:
             raise HTTPException(status_code=500, detail=str(e))
     else:
         raise HTTPException(status_code=404, detail="Contribution not found")
+
+
+async def list_contributions_by_status(db: AsyncSession, status: ContributionStatus):
+    query = select(UserContribution).filter(UserContribution.status == status)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+async def update_contribution_status(
+    db: AsyncSession, contribution_id: int, new_status: ContributionStatus
+):
+    query = select(UserContribution).filter(UserContribution.id == contribution_id)
+    result = await db.execute(query)
+    contribution = result.scalars().one_or_none()
+
+    if contribution is None:
+        raise HTTPException(status_code=404, detail="Contribution not found")
+
+    contribution.status = new_status
+    db.add(contribution)
+    await db.commit()
+    return contribution

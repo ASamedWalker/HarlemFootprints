@@ -7,12 +7,16 @@ from services.contributions_service import (
     get_all_contributions,
     update_contribution,
     delete_contribution,
+    list_contributions_by_status,
+    update_contribution_status,
 )
 from schemas.contributions import (
     ContributionCreate,
     ContributionUpdate,
     ContributionRead,
 )
+from models.contributions import ContributionStatus
+
 from data.database import get_session
 
 router = APIRouter()
@@ -25,9 +29,36 @@ async def create_contribution_endpoint(
     return await create_contribution(db, contribution)
 
 
-@router.get("/", response_model=list[ContributionRead])
+@router.get("/all", response_model=list[ContributionRead])
 async def get_all_contributions_endpoint(db: AsyncSession = Depends(get_session)):
     return await get_all_contributions(db)
+
+
+@router.get("/by-status", response_model=list[ContributionRead])
+async def list_contributions(
+    status: ContributionStatus = ContributionStatus.pending,
+    db: AsyncSession = Depends(get_session),
+):
+    contributions = await list_contributions_by_status(db, status)
+    return contributions
+
+
+@router.patch("/{contribution_id}/approve", response_model=ContributionRead)
+async def approve_contribution(
+    contribution_id: int, db: AsyncSession = Depends(get_session)
+):
+    return await update_contribution_status(
+        db, contribution_id, ContributionStatus.approved
+    )
+
+
+@router.patch("/{contribution_id}/reject", response_model=ContributionRead)
+async def reject_contribution(
+    contribution_id: int, db: AsyncSession = Depends(get_session)
+):
+    return await update_contribution_status(
+        db, contribution_id, ContributionStatus.rejected
+    )
 
 
 @router.get("/{id}", response_model=ContributionUpdate)

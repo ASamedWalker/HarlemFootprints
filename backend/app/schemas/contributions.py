@@ -9,6 +9,7 @@ class ContributionCreate(BaseModel):
     images: Optional[List[HttpUrl]] = []
     audio: Optional[HttpUrl] = None
     verified: bool = False
+    status: str = "pending"  # Default status is pending
 
     class Config:
         from_attributes = True
@@ -42,6 +43,7 @@ class ContributionUpdate(BaseModel):
     images: Optional[List[HttpUrl]]
     audio: Optional[HttpUrl]
     verified: Optional[bool]
+    status: Optional[str]  # Allow updating the status
 
     class Config:
         from_attributes = True

@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, JSON
+from datetime import datetime
 from sqlmodel import SQLModel, Field
 from typing import List, Optional
 
@@ -23,3 +24,6 @@ class HistoricalSite(SQLModel, table=True):
         default=None, sa_column=Column(String, nullable=True)
     )
     verified: bool = Field(default=False, sa_column=Column(Boolean))
+    date_established: datetime = Field(
+        default=datetime.now(), sa_column=Column(String)
+    )

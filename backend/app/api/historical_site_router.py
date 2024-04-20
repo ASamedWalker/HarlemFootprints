@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 from data.database import get_session
 from typing import Optional, List
 from schemas.historical_site import (
@@ -15,6 +16,7 @@ from services.historical_site_service import (
     delete_historical_site,
     search_historical_sites,
     search_nearby_sites,
+    get_sites_by_date_range,
 )
 from models.historical_site import HistoricalSite
 
@@ -45,6 +47,16 @@ async def search_sites_endpoint(
         return sites
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/dates", response_model=list[HistoricalSiteRead])
+async def fetch_sites_by_dates(
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    db: AsyncSession = Depends(get_session),
+):
+    sites = await get_sites_by_date_range(db, start_date, end_date)
+    return sites
 
 
 @router.get("/nearby", response_model=list[HistoricalSiteRead])

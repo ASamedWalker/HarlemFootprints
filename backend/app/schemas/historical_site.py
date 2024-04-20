@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 
 
 # Schema for client inputs on creating a new historical site
@@ -14,6 +15,7 @@ class HistoricalSiteCreate(BaseModel):
     images: Optional[List[str]] = []
     audio_guide_url: Optional[str] = None
     verified: Optional[bool] = False
+    date_established: Optional[datetime] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -40,6 +42,7 @@ class HistoricalSiteUpdate(BaseModel):
     images: Optional[List[str]] = []
     audio_guide_url: Optional[str] = None
     verified: Optional[bool] = None
+    date_established: Optional[datetime] = None
 
     class Config:
         arbirary_types_allowed = True

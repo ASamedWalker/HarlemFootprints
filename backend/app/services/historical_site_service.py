@@ -3,8 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
 from sqlalchemy.future import select
 from sqlalchemy.sql import or_
-from sqlalchemy import func
-from geoalchemy2 import Geography
+from datetime import datetime
 from math import radians, sin, cos, sqrt, asin
 from sqlmodel import Session, select
 from typing import List, Optional
@@ -164,6 +163,24 @@ async def search_nearby_sites(
             if distance <= radius:
                 sites.append(site)
 
+        return sites
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_sites_by_date_range(
+    db: AsyncSession,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+) -> List[HistoricalSite]:
+    try:
+        query = select(HistoricalSite)
+        if start_date:
+            query = query.where(HistoricalSite.date_established >= start_date)
+        if end_date:
+            query = query.where(HistoricalSite.date_established <= end_date)
+        result = await db.execute(query)
+        sites = result.scalars().all()
         return sites
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))

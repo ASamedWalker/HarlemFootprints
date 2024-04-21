@@ -11,7 +11,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
-SessionLocal = sessionmaker(
+AsyncSessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
     bind=engine,
@@ -21,10 +21,13 @@ SessionLocal = sessionmaker(
 
 async def create_tables():
     async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(SQLModel.metadata.create_all)
+        try:
+            await conn.run_sync(SQLModel.metadata.drop_all)
+            await conn.run_sync(SQLModel.metadata.create_all)
+        except Exception as e:
+            print("An error occurred while creating tables:", e)
 
 
 async def get_session() -> AsyncSession:
-    async with SessionLocal() as session:
+    async with AsyncSessionLocal() as session:
         yield session

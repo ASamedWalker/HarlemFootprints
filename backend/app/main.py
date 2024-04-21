@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from api.historical_site_router import router as historical_site_router
 from api.contributions_router import router as contributions_router
@@ -25,6 +26,20 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+origins = [
+    "http://localhost:3000",  # React app address
+    "http://localhost:8000",  # FastAPI server address
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Adjust to match your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 
 app.include_router(historical_site_router, prefix="/sites", tags=["Historical Site"])

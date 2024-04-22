@@ -16,7 +16,72 @@
   }
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
+}
+
+/* Sidebar: This controls the main sidebar container */
+.sidebar {
+  @apply fixed inset-y-0 left-0 transform max-w-xs w-full bg-white shadow-lg z-40;
+}
+
+/* Using variants for the sidebar to control its state */
+.sidebar.open {
+  @apply translate-x-0;
+}
+
+.sidebar.closed {
+  @apply -translate-x-full;
+}
+
+/* Sidebar Content: This controls the padding and layout within the sidebar */
+.sidebar-content {
+  @apply p-4 overflow-y-auto h-full;
+}
+
+/* Sidebar Image: This controls how images are displayed in the sidebar */
+.sidebar-image {
+  @apply w-full h-48 object-cover rounded-lg;
+}
+
+/* Sidebar Title: This controls the styling for the site name */
+.sidebar-title {
+  @apply mt-4 text-xl font-semibold text-gray-900;
+}
+
+/* Sidebar Description: This controls the styling for the site description */
+.sidebar-description {
+  @apply mt-2 text-sm text-gray-700;
+}
+
+/* Sidebar Address: This controls the styling for the site address */
+.sidebar-address {
+  @apply mt-4 text-sm text-gray-700;
+}
+
+/* Sidebar Era: This controls the styling for the site era */
+.sidebar-era {
+  @apply mt-1 text-sm text-gray-500 italic;
+}
+
+/* Sidebar Tags: This controls the tag list display */
+.sidebar-tags {
+  @apply flex flex-wrap gap-2 mt-4;
+}
+
+/* Tag style: This controls the individual tag styling */
+.tag {
+  @apply bg-gray-200 rounded-full px-3 py-1 text-xs font-medium text-gray-700;
+}
+
+/* Sidebar Audio: This controls the audio player styling */
+.sidebar-audio {
+  @apply mt-4;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari and Opera */
 }

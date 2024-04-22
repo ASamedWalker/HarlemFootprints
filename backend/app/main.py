@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from api.historical_site_router import router as historical_site_router
 from api.contributions_router import router as contributions_router
 from data.database import create_tables
+from pathlib import Path
 
 
 # Assuming you have a hypothetical function to load and unload resources
@@ -26,6 +28,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+BASE_DIR = Path(__file__).resolve().parent
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 origins = [
     "http://localhost:3000",  # React app address

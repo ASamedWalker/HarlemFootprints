@@ -1,35 +1,52 @@
 "use client";
 import { useEffect, useState } from "react";
-import { TileLayer, Marker, Popup } from "react-leaflet";
+import { TileLayer } from "react-leaflet";
 import { LatLngTuple } from "leaflet";
-import L from "leaflet";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
+import SiteMarker from "./SiteMarker";
+import { BeatLoader } from "react-spinners";
+import { HistoricalSite } from "@/types/historicalSiteTypes";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   {
-    ssr: false, // This will make the component only be rendered on client-side
+    ssr: false,
   }
 );
 
-const MapComponent = () => {
+interface MapComponentProps {
+  onMarkerClick: (siteId: number) => void;
+}
 
-  const [sites, setSites] = useState([]);
-  // Set the default center and zoom level of the map
+const MapComponent = ({ onMarkerClick }: MapComponentProps) => {
+  const [sites, setSites] = useState<HistoricalSite[]>([]);
+  const [loading, setLoading] = useState(true);
   const defaultCenter: LatLngTuple = [40.7128, -74.006]; // Coordinates for NYC
   const defaultZoom = 12;
 
-  // Fetch historical sites data from your backend
   useEffect(() => {
     const fetchSites = async () => {
-      const response = await fetch('http://localhost:8000/sites'); // Adjust the URL to your API endpoint
-      const data = await response.json();
-      setSites(data);
+      try {
+        const response = await fetch("http://localhost:8000/sites");
+        const data = await response.json();
+        setSites(data);
+      } catch (error) {
+        console.error("Failed to fetch sites:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-
     fetchSites();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <BeatLoader color="#0000FF" />
+      </div>
+    );
+  }
 
   return (
     <MapContainer
@@ -38,11 +55,12 @@ const MapComponent = () => {
       style={{ height: "100%", width: "100%" }}
     >
       <TileLayer
-        // URL to a tile server, using OpenStreetMap tiles
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {/* Markers for historical sites would go here */}
+      {sites.map((site) => (
+        <SiteMarker key={site.id} site={site} onMarkerClick={onMarkerClick} />
+      ))}
     </MapContainer>
   );
 };

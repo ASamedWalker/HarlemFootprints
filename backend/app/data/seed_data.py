@@ -10,7 +10,7 @@ historical_sites = [
         "era": "Late 19th Century",
         "verified": True,
         "tags": ["monument", "freedom", "NYC"],
-        "images": ["https://example.com/statueofliberty.jpg"],
+        "images": ["/static/images/statue_of_liberty.jpg"],
         "audio_guide_url": "https://example.com/statueofliberty_audio.mp3",
     },
     {
@@ -22,7 +22,7 @@ historical_sites = [
         "era": "Mid 19th Century",
         "verified": True,
         "tags": ["park", "public", "NYC"],
-        "images": ["https://example.com/centralpark.jpg"],
+        "images": ["/static/images/central_park.jpg"],
         "audio_guide_url": "https://example.com/centralpark_audio.mp3",
     },
     # Show only new york sites for brevity
@@ -35,7 +35,7 @@ historical_sites = [
         "era": "Early 20th Century",
         "verified": True,
         "tags": ["skyscraper", "architecture", "NYC"],
-        "images": ["https://example.com/empirestatebuilding.jpg"],
+        "images": ["/static/images/empire_state_building.jpg"],
         "audio_guide_url": "https://example.com/empirestatebuilding_audio.mp3",
     },
     {
@@ -47,7 +47,7 @@ historical_sites = [
         "era": "Late 19th Century",
         "verified": True,
         "tags": ["bridge", "engineering", "NYC"],
-        "images": ["https://example.com/brooklynbridge.jpg"],
+        "images": ["/static/images/brooklyn_bridge.jpg"],
         "audio_guide_url": "https://example.com/brooklynbridge_audio.mp3",
     },
     {
@@ -59,7 +59,7 @@ historical_sites = [
         "era": "Early 20th Century",
         "verified": True,
         "tags": ["square", "entertainment", "NYC"],
-        "images": ["https://example.com/timessquare.jpg"],
+        "images": ["/static/images/times_square.jpg"],
         "audio_guide_url": "https://example.com/timessquare_audio.mp3",
     },
     {
@@ -71,7 +71,7 @@ historical_sites = [
         "era": "Late 19th Century",
         "verified": True,
         "tags": ["museum", "art", "NYC"],
-        "images": ["https://example.com/metmuseum.jpg"],
+        "images": ["/static/images/metropolitan_museum.jpg"],
         "audio_guide_url": "https://example.com/metmuseum_audio.mp3",
     },
     {
@@ -83,7 +83,7 @@ historical_sites = [
         "era": "21st Century",
         "verified": True,
         "tags": ["skyscraper", "memorial", "NYC"],
-        "images": ["https://example.com/oneworldtradecenter.jpg"],
+        "images": ["/static/images/world_trade_center.jpg"],
         "audio_guide_url": "https://example.com/oneworldtradecenter_audio.mp3",
     },
     {
@@ -95,7 +95,7 @@ historical_sites = [
         "era": "Early 20th Century",
         "verified": True,
         "tags": ["commercial", "NYC"],
-        "images": ["https://example.com/rockefellercenter.jpg"],
+        "images": ["/static/images/rockefellar_center.jpg"],
         "audio_guide_url": "https://example.com/rockefellercenter_audio.mp3",
     },
     {
@@ -107,7 +107,7 @@ historical_sites = [
         "era": "19th Century",
         "verified": True,
         "tags": ["church", "architecture", "NYC"],
-        "images": ["https://example.com/stpatrickscathedral.jpg"],
+        "images": ["/static/images/stpatrickscathedral.png"],
         "audio_guide_url": "https://example.com/stpatrickscathedral_audio.mp3",
     },
     {
@@ -119,7 +119,7 @@ historical_sites = [
         "era": "21st Century",
         "verified": True,
         "tags": ["stadium", "sports", "NYC"],
-        "images": ["https://example.com/yankeestadium.jpg"],
+        "images": ["/static/images/yankeestadium.png"],
         "audio_guide_url": "https://example.com/yankeestadium_audio.mp3",
     },
     {
@@ -131,7 +131,7 @@ historical_sites = [
         "era": "Late 19th Century",
         "verified": True,
         "tags": ["beach", "entertainment", "NYC"],
-        "images": ["https://example.com/coneyisland.jpg"],
+        "images": ["/static/images/coneyisland.png"],
         "audio_guide_url": "https://example.com/coneyisland_audio.mp3",
     },
 ]

@@ -21,7 +21,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex h-screen relative">
+    <div className="flex h-screen relative" style={{ position: 'relative', zIndex: 0 }}>
       {/* Your map component goes here, and you pass handleMarkerClick to it */}
       <MapComponent onMarkerClick={handleMarkerClick} />
 

@@ -1,5 +1,4 @@
 // components/Sidebar.tsx
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { HistoricalSite } from "@/types/historicalSiteTypes";
 
@@ -17,56 +16,49 @@ const Sidebar = ({ siteDetails, isOpen, onClose }: SidebarProps) => {
 
   return (
     <aside
-      className={`sidebar ${isOpen ? "open" : ""}`}
-      aria-hidden={!isOpen}
-      style={{
-        position: "fixed",
-        right: 0,
-        top: 0,
-        height: "100vh",
-        width: "300px",
-        overflowY: "auto",
-        overflowX: "hidden",
-        zIndex: 1000,
-        marginLeft: 'auto',
-        scrollbarWidth: 'none',
-      }}
+      className={`transform top-0 right-0 w-80 bg-white fixed h-full overflow-auto ease-in-out transition-all duration-300 z-1000 ${
+        isOpen ? "translate-x-0" : "translate-x-full"
+        } shadow-lg`}
+        style={{ zIndex: 1000 }}
     >
-      <button onClick={onClose} className="sidebar-close">
-        Close
-      </button>
-      <div className="sidebar-content">
-        {siteDetails.images && siteDetails.images.length > 0 && (
+       <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <h1 className="text-lg font-semibold">{siteDetails.name}</h1>
+        <button onClick={onClose} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none">
+          <span className="material-icons">close</span>
+        </button>
+      </div>
+
+      {siteDetails.images && siteDetails.images.length > 0 && (
+        <div className="relative w-full h-56">
           <Image
             src={fullImageUrl}
             alt={siteDetails.name}
-            height={300}
-            width={400}
-            className="sidebar-image"
+            layout="fill"
+            objectFit="cover"
+            className="object-cover rounded-lg"
           />
-        )}
-        <h1 className="sidebar-title">{siteDetails.name}</h1>
-        <p className="sidebar-description">{siteDetails.description}</p>
+        </div>
+      )}
+       <div className="p-4">
+        <p className="text-sm text-gray-500">{siteDetails.description}</p>
         {siteDetails.address && (
-          <p className="sidebar-address">{siteDetails.address}</p>
+          <p className="mt-2 text-sm text-gray-600"><strong>Address:</strong> {siteDetails.address}</p>
         )}
         {siteDetails.era && (
-          <p className="sidebar-era">Era: {siteDetails.era}</p>
+          <p className="mt-1 text-sm text-gray-600"><strong>Era:</strong> {siteDetails.era}</p>
         )}
-        {siteDetails.tags && (
-          <ul className="sidebar-tags">
-            {siteDetails.tags.map((tag) => (
-              <li key={tag}>{tag}</li>
-            ))}
-          </ul>
+        {siteDetails.tags && siteDetails.tags.length > 0 && (
+          <div className="mt-2">
+            <strong>Tags:</strong>
+            <ul className="flex flex-wrap gap-2 mt-1">
+              {siteDetails.tags.map(tag => (
+                <li key={tag} className="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
-        {siteDetails.audio_guide_url && (
-          <audio controls className="sidebar-audio">
-            <source src={siteDetails.audio_guide_url} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
-        )}
-        {/* You can add more details as required */}
       </div>
     </aside>
   );
